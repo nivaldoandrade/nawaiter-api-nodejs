@@ -1,0 +1,6 @@
+{
+  "*.ts": [
+    "yarn eslint --fix",
+    "prettier --write"
+  ]
+}

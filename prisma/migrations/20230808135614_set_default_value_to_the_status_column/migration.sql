@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "OrderItem" ALTER COLUMN "status" SET DEFAULT 'WAITING';

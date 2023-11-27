@@ -1,0 +1,15 @@
+version: '3.5'
+
+services:
+  postgres:
+    container_name: ${NAME_BD}
+    image: postgres
+    ports:
+      - ${PORT_BD}:5432
+    restart: unless-stopped
+    volumes:
+      - ./postgres:/data/postgres
+    environment:
+      POSTGRES_USER: ${USERNAME_BD}
+      POSTGRES_PASSWORD: ${PASSWORD_BD}
+      PGDATA: /data/postgres

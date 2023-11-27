@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  garcom
+  cozinha
+
+  @@map("user_role")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  username  String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Category {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String
+  icon     String
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String      @id @default(uuid()) @db.Uuid
+  categoryId  String?     @map("category_id") @db.Uuid
+  name        String
+  description String?
+  imagePath   String
+  price       Float
+  ingredients Json?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  OrderItem   OrderItem[]
+
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@map("products")
+}
+
+enum OrderItemStatus {
+  WAITING
+  IN_PRODUCTION
+  DONE
+  DELIVERED_TO_TABLE
+  CANCELLED
+
+  @@map("orderitem_status")
+}
+
+model OrderItem {
+  id          String          @id @default(uuid()) @db.Uuid
+  orderId     String          @map("order_id") @db.Uuid
+  productId   String          @map("product_id") @db.Uuid
+  quantity    Int
+  totalPrice  Float           @map("total_price")
+  status      OrderItemStatus @default(WAITING)
+  observation String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+}
+
+model Order {
+  id          String      @id @default(uuid()) @db.Uuid
+  orderNumber Int         @unique @default(autoincrement()) @map("order_number")
+  tableId     String      @unique @map("table_id") @db.Uuid
+  items       OrderItem[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  finishedAt  DateTime?
+
+  table Table @relation(fields: [tableId], references: [id])
+}
+
+model Table {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  order     Order?
+
+  @@map("table")
+}
+
+model CompletedOrder {
+  id          String   @id @default(uuid()) @db.Uuid
+  orderNumber Int      @unique @map("order_number")
+  table       String
+  date        DateTime @default(now())
+  items       Json
+  totalPrice  Float    @map("total_price")
+
+  @@map("completed_order")
+}
